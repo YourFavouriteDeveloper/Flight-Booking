@@ -1,7 +1,7 @@
 package org.example.imp;
 
 public interface Implementations {
-    void showMenu();
+    void onlineBoard();
     void showFlight();
     boolean searchFlight();
     boolean cancelBooking();

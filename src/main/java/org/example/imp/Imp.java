@@ -2,7 +2,7 @@ package org.example.imp;
 
 public class Imp implements Implementations{
     @Override
-    public void showMenu() {
+    public void onlineBoard() {
 
     }
 

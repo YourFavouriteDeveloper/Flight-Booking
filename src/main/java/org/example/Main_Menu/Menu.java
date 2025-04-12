@@ -1,5 +1,8 @@
 package org.example.Main_Menu;
 
+import Input.ScannerInput;
+import org.example.imp.Imp;
+
 public class Menu {
     @Override
     public String toString() {
@@ -13,6 +16,36 @@ public class Menu {
                 6. Exit
                 ----------------------------------------
                 """;
+    }
+    Imp imp = new Imp();
+
+    public void start() {
+        while(true) {
+
+            switch(ScannerInput.getByte()) {
+                case '1':
+                    imp.onlineBoard();
+                    break;
+                case '2':
+                    imp.showFlight();
+                    break;
+                case '3':
+                    imp.searchFlight();
+                    break;
+                case '4':
+                    imp.cancelBooking();
+                    break;
+                case '5':
+                    imp.myFlights();
+                    break;
+                case '6':
+                    System.exit(1);
+                    break;
+                default:
+                    System.out.println("Invalid Input\n");
+                    break;
+            }
+        }
     }
 
 
