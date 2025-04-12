@@ -7,8 +7,15 @@ import java.sql.*;
 import java.util.HashMap;
 
 public class Imp implements Implementations {
-    HashMap<Integer,Flights> flights = new HashMap<>();
+    private HashMap<Integer,Flights> flights = new HashMap<>();
 
+    public HashMap<Integer, Flights> getFlights() {
+        return flights;
+    }
+
+    public void setFlights(HashMap<Integer, Flights> flights) {
+        this.flights = flights;
+    }
 
     @Override
     public void onlineBoard() {
