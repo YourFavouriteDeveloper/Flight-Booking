@@ -1,6 +1,6 @@
 package org.example.Main_Menu;
 
-import Input.ScannerInput;
+import org.example.Input.ScannerInput;
 import org.example.imp.Imp;
 
 public class Menu {

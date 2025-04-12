@@ -1,4 +1,4 @@
-package Input;
+package org.example.Input;
 
 import java.util.Scanner;
 
