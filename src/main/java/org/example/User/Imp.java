@@ -22,7 +22,7 @@ public class Imp implements Implementations {
 
 
 
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ni16022005")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
 
             DatabaseMetaData dbMeta = conn.getMetaData();

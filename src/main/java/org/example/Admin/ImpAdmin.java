@@ -26,7 +26,7 @@ public class ImpAdmin implements ImplementationsAdmin {
 
 
 
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ni16022005")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
 
             DatabaseMetaData dbMeta = conn.getMetaData();
@@ -90,7 +90,7 @@ public class ImpAdmin implements ImplementationsAdmin {
 
     @Override
     public void showAllFlights() {
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ni16022005")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
 
             DatabaseMetaData dbMeta = conn.getMetaData();
@@ -132,7 +132,7 @@ public class ImpAdmin implements ImplementationsAdmin {
 
     @Override
     public Flights searchFlight() {
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ni16022005")) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
 
             DatabaseMetaData dbMeta = conn.getMetaData();
