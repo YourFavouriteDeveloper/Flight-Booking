@@ -1,12 +1,22 @@
 package org.example.Input;
 
+import java.sql.Date;
+import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 public class ScannerInput {
     static Scanner sc = new Scanner(System.in);
 
     public static int getInt() {
-        return sc.nextInt();
+        while (!sc.hasNextInt()) {
+            System.out.println("Invalid input. Please enter a valid integer.");
+            sc.next(); // consume the invalid token
+        }
+        int value = sc.nextInt();
+        sc.nextLine(); // consume the leftover newline
+        return value;
     }
 
     public static String getString() {
@@ -14,11 +24,23 @@ public class ScannerInput {
     }
 
     public static byte getByte() {
-        return sc.nextByte();
+        while (!sc.hasNextByte()) {
+            System.out.println("Invalid input. Please enter a valid byte.");
+            sc.next();
+        }
+        byte value = sc.nextByte();
+        sc.nextLine();
+        return value;
     }
 
     public static short getShort() {
-        return sc.nextShort();
+        while (!sc.hasNextShort()) {
+            System.out.println("Invalid input. Please enter a valid short.");
+            sc.next();
+        }
+        short value = sc.nextShort();
+        sc.nextLine();
+        return value;
     }
 
     public static char getChar() {
@@ -26,14 +48,46 @@ public class ScannerInput {
     }
 
     public static long getLong() {
-        return sc.nextLong();
+        while (!sc.hasNextLong()) {
+            System.out.println("Invalid input. Please enter a valid long.");
+            sc.next();
+        }
+        long value = sc.nextLong();
+        sc.nextLine();
+        return value;
     }
 
     public static float getFloat() {
-        return sc.nextFloat();
+        while (!sc.hasNextFloat()) {
+            System.out.println("Invalid input. Please enter a valid float.");
+            sc.next();
+        }
+        float value = sc.nextFloat();
+        sc.nextLine();
+        return value;
     }
 
     public static double getDouble() {
-        return sc.nextDouble();
+        while (!sc.hasNextDouble()) {
+            System.out.println("Invalid input. Please enter a valid double.");
+            sc.next();
+        }
+        double value = sc.nextDouble();
+        sc.nextLine();
+        return value;
+    }
+
+    public static Date getDate() {
+
+        String dateInput = sc.nextLine();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd:MM:yyyy");
+        sdf.setLenient(false);
+        try {
+            java.util.Date utilDate = sdf.parse(dateInput);
+            return new Date(utilDate.getTime());
+        } catch (ParseException e) {
+            System.out.println("Invalid date format. Please use dd:MM:yyyy.");
+            return getDate();
+        }
     }
 }

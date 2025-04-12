@@ -1,4 +1,4 @@
-package org.example.imp;
+package org.example.User;
 
 public interface Implementations {
     void onlineBoard();
