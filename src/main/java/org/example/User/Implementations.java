@@ -3,6 +3,7 @@ package org.example.User;
 import org.example.models.Flights;
 
 public interface Implementations {
+    boolean loginUser();
     boolean registerUser();
     void onlineBoard();
     Flights showFlight();

@@ -67,6 +67,8 @@ public class Passengers {
         isBooked = booked;
     }
 
+    public Passengers() {}
+
     public Passengers(int passengerId, String firstName, String lastName, String gender, String nationality, String passport) {
         this.passengerId = passengerId;
         this.firstName = firstName;

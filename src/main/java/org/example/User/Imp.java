@@ -2,13 +2,24 @@ package org.example.User;
 
 import org.example.Input.ScannerInput;
 import org.example.User.Implementations;
+import org.example.models.Accounts;
 import org.example.models.Flights;
+import org.example.models.Passengers;
 
 import java.sql.*;
 import java.util.HashMap;
 
 public class Imp implements Implementations {
     private HashMap<Integer, Flights> flights = new HashMap<>();
+    private Accounts user = new Accounts("user");
+
+    public Accounts getUser() {
+        return user;
+    }
+
+    public void setUser(Accounts user) {
+        this.user = user;
+    }
 
     public HashMap<Integer, Flights> getFlights() {
         return flights;
@@ -16,6 +27,61 @@ public class Imp implements Implementations {
 
     public void setFlights(HashMap<Integer, Flights> flights) {
         this.flights = flights;
+    }
+
+    @Override
+    public boolean loginUser() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
+
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet tables = dbMeta.getTables(null, null, "users", null);
+
+            if (tables.next()) {
+
+
+                String selectQueryUser = "SELECT * FROM users";
+                String selectQueryPassenger = "SELECT * FROM passengers WHERE id = ?";
+                try (Statement stmt = conn.createStatement();
+                     ResultSet rs = stmt.executeQuery(selectQueryUser)) {
+
+                    while (rs.next()) {
+                        user.setUsername(rs.getString("userName"));
+                        user.setPassword(rs.getString("password"));
+                        Passengers passenger = new Passengers();
+                        try (PreparedStatement preparedStatement = conn.prepareStatement(selectQueryPassenger)) {
+                             preparedStatement.setInt(1, rs.getInt("passengerId"));
+                             ResultSet r = preparedStatement.executeQuery();
+                             while (r.next()) {
+                                passenger.setId(r.getInt("id"));
+                                passenger.setFirstName(r.getString("firstName"));
+                                passenger.setLastName(r.getString("lastName"));
+                                passenger.setGender(r.getString("gender"));
+                                passenger.setNationality(r.getString("nationality"));
+                                passenger.setPassport(r.getString("passport"));
+                            }
+                        }
+                        user.setPassenger(passenger);
+
+                    }
+
+                }
+                System.out.print("Enter username: ");
+                String username = ScannerInput.getString();
+                System.out.print("Enter password: ");
+                String password = ScannerInput.getString();
+                if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                    System.out.println("LOGIN SUCCESS");
+                    return true;
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("LOGIN FAILED");
+        return false;
     }
 
     @Override

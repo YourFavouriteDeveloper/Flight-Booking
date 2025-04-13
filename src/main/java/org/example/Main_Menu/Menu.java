@@ -98,47 +98,54 @@ public class Menu {
                                 break;
                             }
                         }
-                    }
-                    else {
+                    } else {
                         System.out.println("LOGIN FAILED");
                     }
 
                     break;
                 case 2:
-                    while (true) {
-                        boolean breaker = false;
-                        System.out.print(menu.forUser() + "\nEnter your choice: ");
-                        switch (ScannerInput.getByte()) {
-                            case 1:
-                                try {
-                                    imp.onlineBoard();
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
+                    if (imp.loginUser()) {
+                        while (true) {
+                            boolean breaker = false;
+                            System.out.print(menu.forUser() + "\nEnter your choice: ");
+                            switch (ScannerInput.getByte()) {
+                                case 1:
+                                    try {
+                                        imp.onlineBoard();
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    break;
+                                case 2:
+                                    imp.showFlight();
+                                    break;
+                                case 3:
+                                    imp.searchFlight();
+                                    break;
+                                case 4:
+                                    imp.cancelBooking();
+                                    break;
+                                case 5:
+                                    imp.myFlights();
+                                    break;
+                                case 6:
+                                    System.out.print("Do you want to log out?\n1. Yes\n2. No\nEnter your choice: ");
+                                    byte choice = ScannerInput.getByte();
+                                    breaker = choice == 1;
+                                    if (breaker) {
+                                        imp.setUser(null);
+                                    }
+                                    break;
+                                default:
+                                    System.out.println("Invalid Input\n");
+                                    break;
+                            }
+                            if (breaker) {
                                 break;
-                            case 2:
-                                imp.showFlight();
-                                break;
-                            case 3:
-                                imp.searchFlight();
-                                break;
-                            case 4:
-                                imp.cancelBooking();
-                                break;
-                            case 5:
-                                imp.myFlights();
-                                break;
-                            case 6:
-                                breaker = true;
-                                break;
-                            default:
-                                System.out.println("Invalid Input\n");
-                                break;
-                        }
-                        if (breaker) {
-                            break;
+                            }
                         }
                     }
+
                     break;
                 case 3:
                     imp.registerUser();
