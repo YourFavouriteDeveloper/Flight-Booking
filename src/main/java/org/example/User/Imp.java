@@ -1,5 +1,6 @@
 package org.example.User;
 
+import org.example.Input.ScannerInput;
 import org.example.User.Implementations;
 import org.example.models.Flights;
 
@@ -7,7 +8,7 @@ import java.sql.*;
 import java.util.HashMap;
 
 public class Imp implements Implementations {
-    private HashMap<Integer,Flights> flights = new HashMap<>();
+    private HashMap<Integer, Flights> flights = new HashMap<>();
 
     public HashMap<Integer, Flights> getFlights() {
         return flights;
@@ -18,8 +19,89 @@ public class Imp implements Implementations {
     }
 
     @Override
-    public void onlineBoard() {
+    public boolean registerUser() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet table1 = dbMeta.getTables(null, null, "passengers", null);
+            ResultSet table2 = dbMeta.getTables(null, null, "users", null);
+            if (!table1.next()) {
+                String createTable = """
+                    CREATE TABLE passengers (
+                        id SERIAL PRIMARY KEY,
+                        firstName VARCHAR(255),
+                        lastName VARCHAR(255),
+                        gender VARCHAR(255),
+                        nationality VARCHAR(255),
+                        passport VARCHAR(255)
+                    );
+                    """;
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(createTable);
+                }
+            }
+            if (!table2.next()) {
+                String createTable = """
+                    CREATE TABLE users (
+                        username VARCHAR(255),
+                        password VARCHAR(255),
+                        passengerId SERIAL PRIMARY KEY REFERENCES passengers(id)
+                    );
+                    """;
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(createTable);
+                }
+            }
+
+
+            String insertQueryUser = "INSERT INTO users (username,password) VALUES (?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(insertQueryUser)) {
+                System.out.println("Creating a new user...");
+                System.out.print("Enter Username: ");
+                stmt.setString(1, ScannerInput.getString());
+                System.out.print("Enter password: ");
+                String password = ScannerInput.getString();
+                System.out.print("Confirm Password: ");
+                while(!password.equals(ScannerInput.getString())) {
+                    System.out.println("Passwords do not match");
+                    System.out.print("Enter password: ");
+                    password = ScannerInput.getString();
+                    System.out.print("Confirm Password: ");
+                }
+                stmt.setString(2, password);
+                String insertQueryPassenger = "INSERT INTO passengers (firstName, lastName, gender, nationality, passport) VALUES (?, ?, ?, ?, ?)";
+                try (PreparedStatement st = conn.prepareStatement(insertQueryPassenger)) {
+                    System.out.println("Creating detailed information about the user...");
+                    System.out.print("Enter First Name: ");
+                    st.setString(1, ScannerInput.getString());
+                    System.out.print("Enter Last Name: ");
+                    st.setString(2, ScannerInput.getString());
+                    System.out.print("Enter gender: ");
+                    st.setString(3, ScannerInput.getString());
+                    System.out.print("Enter Nationality: ");
+                    st.setString(4, ScannerInput.getString());
+                    System.out.print("Enter Passport: ");
+                    st.setString(5, ScannerInput.getString());
+                    st.executeUpdate();
+                    stmt.executeUpdate();
+                    System.out.println("The new User has been created!");
+                    return true;
+                }
+            }
+
+
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    @Override
+    public void onlineBoard() {
 
 
         try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
@@ -50,12 +132,12 @@ public class Imp implements Implementations {
                         flight.setDestination(rs.getString("destination"));
                         flights.put(flight.getFlightId(), flight);
                     }
-                    for(Integer id : flights.keySet()) {
+                    for (Integer id : flights.keySet()) {
                         System.out.println(flights.get(id).toString());
                     }
                 }
 
-            } 
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -63,14 +145,109 @@ public class Imp implements Implementations {
     }
 
     @Override
-    public void showFlight() {
+    public Flights showFlight() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet tables = dbMeta.getTables(null, null, "flights", null);
+
+            if (tables.next()) {
+
+
+                String selectQuery = "SELECT * FROM flights WHERE id = ?";
+                try (PreparedStatement preparedStatement = conn.prepareStatement(selectQuery)) {
+                    System.out.print("Enter the flight ID: ");
+                    int searchingId = ScannerInput.getInt();
+                    preparedStatement.setInt(1, searchingId);
+                    ResultSet rs = preparedStatement.executeQuery();
+                    while (rs.next()) {
+                        Flights flight = new Flights();
+                        flight.setFlightId(rs.getInt("id"));
+                        flight.setArrivalTime(rs.getDate("arrivalTime"));
+                        flight.setDepartureTime(rs.getDate("departureTime"));
+                        flight.setFlightNumber(rs.getString("flightNumber"));
+                        flight.setAvailableSeats(rs.getInt("availableSeats"));
+                        flight.setTotalSeats(rs.getInt("totalSeats"));
+                        flight.setAirplaneModel(rs.getString("airplaneModel"));
+                        flight.setAirplaneCompany(rs.getString("airplaneCompany"));
+                        flight.setOrigin(rs.getString("origin"));
+                        flight.setDestination(rs.getString("destination"));
+                        System.out.println("FLIGHT FOUND" + flight.toString());
+                        return flight;
+                    }
+                    System.out.println("FLIGHT NOT FOUND");
+
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public boolean searchFlight() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
+
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet tables = dbMeta.getTables(null, null, "flights", null);
+
+            if (tables.next()) {
+
+
+                String selectQuery = "SELECT * FROM flights WHERE destination = ? AND departureTime = ? AND availableSeats >= ? ";
+                try (PreparedStatement preparedStatement = conn.prepareStatement(selectQuery)) {
+                    System.out.print("Enter the Destination: ");
+                    String searchingDestination = ScannerInput.getString();
+                    System.out.print("Enter the Departure Time (dd:MM:yyyy): ");
+                    Date searchingDepartureTime = ScannerInput.getDate();
+                    System.out.print("Enter the Number of People: ");
+                    int searchingPeople = ScannerInput.getInt();
+                    preparedStatement.setString(1, searchingDestination);
+                    preparedStatement.setDate(2, searchingDepartureTime);
+                    preparedStatement.setInt(3, searchingPeople);
+                    ResultSet rs = preparedStatement.executeQuery();
+                    int count = 0;
+                    while (rs.next()) {
+                        Flights flight = new Flights();
+                        flight.setFlightId(rs.getInt("id"));
+                        flight.setArrivalTime(rs.getDate("arrivalTime"));
+                        flight.setDepartureTime(rs.getDate("departureTime"));
+                        flight.setFlightNumber(rs.getString("flightNumber"));
+                        flight.setAvailableSeats(rs.getInt("availableSeats"));
+                        flight.setTotalSeats(rs.getInt("totalSeats"));
+                        flight.setAirplaneModel(rs.getString("airplaneModel"));
+                        flight.setAirplaneCompany(rs.getString("airplaneCompany"));
+                        flight.setOrigin(rs.getString("origin"));
+                        flight.setDestination(rs.getString("destination"));
+                        System.out.println("AVAILABLE FLIGHT NO:" + (++count) + flight.toString());
+
+                    }
+                    if (count != 0) {
+                        System.out.print("Would you like to book a new flight?\n1. Yes\n2. No\nEnter your choice: ");
+                        switch (ScannerInput.getByte()) {
+                            case 1:
+                        }
+                    } else {
+                        System.out.println("THERE ARE NO SUCH FLIGHT FOR YOUR CHOICES");
+                    }
+
+
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
+
     }
+
 
     @Override
     public boolean cancelBooking() {
@@ -79,6 +256,16 @@ public class Imp implements Implementations {
 
     @Override
     public void myFlights() {
+
+    }
+
+    @Override
+    public boolean bookFlight() {
+        return false;
+    }
+
+    @Override
+    public void notifications() {
 
     }
 }

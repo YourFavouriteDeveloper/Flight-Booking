@@ -7,6 +7,7 @@ public class Accounts {
     private String username;
     private String password;
     private AccountType accountType;
+    private Passengers passenger;
 
     public String getUsername() {
         return username;
@@ -32,10 +33,19 @@ public class Accounts {
         this.accountType = AccountType.valueOf(accountType.substring(0, 1).toUpperCase() + accountType.substring(1).toLowerCase());
     }
 
-    public Accounts(String username, String password, String accountType) {
+    public Passengers getPassenger() {
+        return passenger;
+    }
+
+    public void setPassenger(Passengers passenger) {
+        this.passenger = passenger;
+    }
+
+    public Accounts(String username, String password, String accountType,Passengers passenger) {
         this.username = username;
         this.password = password;
         this.accountType = AccountType.valueOf(accountType.substring(0, 1).toUpperCase() + accountType.substring(1).toLowerCase());
+        this.passenger = passenger;
     }
 
     public Accounts(String accountType) {

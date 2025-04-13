@@ -9,6 +9,7 @@ public class Passengers {
     private Gender gender;
     private String nationality;
     private String passport;
+    private boolean isBooked;
 
     public int getId() {
         return passengerId;
@@ -58,6 +59,13 @@ public class Passengers {
         this.passport = passport;
     }
 
+    public boolean isBooked() {
+        return isBooked;
+    }
+
+    public void setBooked(boolean booked) {
+        isBooked = booked;
+    }
 
     public Passengers(int passengerId, String firstName, String lastName, String gender, String nationality, String passport) {
         this.passengerId = passengerId;

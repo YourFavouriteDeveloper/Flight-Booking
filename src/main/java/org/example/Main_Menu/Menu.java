@@ -141,7 +141,7 @@ public class Menu {
                     }
                     break;
                 case 3:
-                    System.out.println("Not ready yet");
+                    imp.registerUser();
                     break;
                 case 4:
                     System.exit(1);

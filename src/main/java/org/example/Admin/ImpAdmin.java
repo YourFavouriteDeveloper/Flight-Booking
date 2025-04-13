@@ -9,7 +9,7 @@ import java.sql.*;
 import java.util.HashMap;
 
 public class ImpAdmin implements ImplementationsAdmin {
-    private static Accounts admin = new Accounts("root","root","admin");
+    private static Accounts admin = new Accounts("root","root","admin",null);
     Imp imp = new Imp();
     HashMap<Integer,Flights> flights = imp.getFlights();
 
@@ -159,7 +159,7 @@ public class ImpAdmin implements ImplementationsAdmin {
                         flight.setAirplaneCompany(rs.getString("airplaneCompany"));
                         flight.setOrigin(rs.getString("origin"));
                         flight.setDestination(rs.getString("destination"));
-                        System.out.println("FLIGHT FOUND\n" + flight.toString());
+                        System.out.println("FLIGHT FOUND" + flight.toString());
                         return flight;
                     }
                     System.out.println("FLIGHT NOT FOUND");
