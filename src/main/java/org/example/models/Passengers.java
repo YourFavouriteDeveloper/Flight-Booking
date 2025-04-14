@@ -78,6 +78,11 @@ public class Passengers {
         this.passport = passport;
     }
 
+    public Passengers(String firstName,String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     @Override
     public String toString() {
         return "\n----------------------------------------\n" +

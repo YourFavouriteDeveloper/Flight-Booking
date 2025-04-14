@@ -12,15 +12,19 @@ public class ScannerInput {
     public static int getInt() {
         while (!sc.hasNextInt()) {
             System.out.println("Invalid input. Please enter a valid integer.");
-            sc.next(); // consume the invalid token
+            sc.next();
         }
         int value = sc.nextInt();
-        sc.nextLine(); // consume the leftover newline
+        sc.nextLine();
         return value;
     }
 
     public static String getString() {
         return sc.nextLine();
+    }
+
+    public static String getNext() {
+        return sc.next();
     }
 
     public static byte getByte() {

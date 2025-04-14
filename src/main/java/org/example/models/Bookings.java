@@ -1,18 +1,11 @@
 package org.example.models;
 
 public class Bookings {
-    private int bookingID;
     private int flightID;
     private double price;
-    private int seatNumber;
 
-    public int getBookingID() {
-        return bookingID;
-    }
 
-    public void setBookingID(int bookingID) {
-        this.bookingID = bookingID;
-    }
+
 
     public int getFlightID() {
         return flightID;
@@ -30,28 +23,19 @@ public class Bookings {
         this.price = price;
     }
 
-    public int getSeatNumber() {
-        return seatNumber;
-    }
 
-    public void setSeatNumber(int seatNumber) {
-        this.seatNumber = seatNumber;
-    }
 
-    public Bookings(int bookingID, Flights flight, double price, int seatNumber) {
-        this.bookingID = bookingID;
+    public Bookings(Flights flight, double price) {
         flightID = flight.getFlightId();
         this.price = price;
-        this.seatNumber = seatNumber;
+
     }
 
     @Override
     public String toString() {
         return "\n----------------------------------------\n" +
-                "Booking ID: " + bookingID +
-                "\nFlight ID: " + flightID +
+                "Flight ID: " + flightID +
                 "\nPrice: " + price +
-                "\nSeat Number: " + seatNumber +
                 "\n----------------------------------------";
     }
 }

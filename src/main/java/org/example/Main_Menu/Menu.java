@@ -12,10 +12,9 @@ public class Menu {
         return """
                 Welcome to the Flight Booking System!
                 ----------------------------------------
-                1. Login as Administrator
-                2. Login as User
-                3. Register a new User
-                4. Exit Program
+                1. Login as User
+                2. Register a new User
+                3. Exit Program
                 ----------------------------------------
                 """;
     }
@@ -61,7 +60,8 @@ public class Menu {
         while (true) {
             System.out.print(menu.select() + "\nEnter your choice: ");
             switch (ScannerInput.getByte()) {
-                case 1:
+                case 0:
+                    System.out.println("ADMIN ACCESS DETECTED");
                     if (menu.loginAdmin()) {
                         System.out.println("LOGIN SUCCESSFULLY");
                         while (true) {
@@ -103,7 +103,7 @@ public class Menu {
                     }
 
                     break;
-                case 2:
+                case 1:
                     if (imp.loginUser()) {
                         while (true) {
                             boolean breaker = false;
@@ -147,10 +147,10 @@ public class Menu {
                     }
 
                     break;
-                case 3:
+                case 2:
                     imp.registerUser();
                     break;
-                case 4:
+                case 3:
                     System.exit(1);
                     break;
                 default:

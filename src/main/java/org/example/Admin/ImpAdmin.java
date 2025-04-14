@@ -30,12 +30,12 @@ public class ImpAdmin implements ImplementationsAdmin {
 
 
             DatabaseMetaData dbMeta = conn.getMetaData();
-            ResultSet tables = dbMeta.getTables(null, null, "flights", null);
-
-            if (!tables.next()) {
+            ResultSet tablesFlight = dbMeta.getTables(null, null, "flights", null);
+            ResultSet tablesBooking = dbMeta.getTables(null, null, "bookings", null);
+            if (!tablesFlight.next()) {
                 System.out.println("No flights found.Creating table and inserting sample data...");
 
-                String createTable = """
+                String createTableFlight = """
                     CREATE TABLE flights (
                         id SERIAL PRIMARY KEY,
                         arrivalTime DATE,
@@ -50,15 +50,29 @@ public class ImpAdmin implements ImplementationsAdmin {
                     );
                     """;
                 try (Statement stmt = conn.createStatement()) {
-                    stmt.executeUpdate(createTable);
-                    System.out.println("Table created.");
+                    stmt.executeUpdate(createTableFlight);
+                }
+            }
+
+            if (!tablesBooking.next()) {
+
+                String createTableBooking = """
+                        CREATE TABLE bookings (
+                            price DOUBLE PRECISION,
+                            flightId INT REFERENCES flights(id)
+                        );
+                        """;
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(createTableBooking);
+
                 }
             }
 
 
 
-            String insertQuery = "INSERT INTO flights (arrivalTime, departureTime, flightNumber, availableSeats, totalSeats, airplaneModel, airplaneCompany, origin, destination) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
+            String insertQueryFlight = "INSERT INTO flights (arrivalTime, departureTime, flightNumber, availableSeats, totalSeats, airplaneModel, airplaneCompany, origin, destination) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insertQueryFlight)) {
                 System.out.println("Inserting sample data...");
                 System.out.print("Enter Arrival Time (dd:MM:yyyy): ");
                 pstmt.setDate(1, ScannerInput.getDate());
@@ -78,8 +92,16 @@ public class ImpAdmin implements ImplementationsAdmin {
                 pstmt.setString(8, ScannerInput.getString());
                 System.out.print("Enter Destination: ");
                 pstmt.setString(9, ScannerInput.getString());
-                pstmt.executeUpdate();
-                System.out.println("Flight has been inserted.");
+                String insertQueryBooking = "INSERT INTO bookings (price) VALUES (?)";
+                try (PreparedStatement pst = conn.prepareStatement(insertQueryBooking)) {
+                    System.out.print("Enter the ticket price: ");
+                    pst.setDouble(1, ScannerInput.getDouble());
+                    pstmt.executeUpdate();
+                    pst.executeUpdate();
+
+                    System.out.println("Flight has been inserted.");
+                }
+
             }
 
 

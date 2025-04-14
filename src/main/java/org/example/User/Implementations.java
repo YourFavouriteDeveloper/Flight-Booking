@@ -1,6 +1,7 @@
 package org.example.User;
 
 import org.example.models.Flights;
+import org.example.models.Passengers;
 
 public interface Implementations {
     boolean loginUser();
@@ -10,7 +11,8 @@ public interface Implementations {
     boolean searchFlight();
     boolean cancelBooking();
     void myFlights();
-    boolean bookFlight();
+    boolean bookFlight(Flights flights, Passengers passenger);
+    boolean reduceSeats(Flights flights);
     void notifications();
 
 }
