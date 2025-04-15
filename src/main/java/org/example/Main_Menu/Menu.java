@@ -3,6 +3,7 @@ package org.example.Main_Menu;
 import org.example.Input.ScannerInput;
 import org.example.User.Imp;
 import org.example.Admin.ImpAdmin;
+import org.example.models.Accounts;
 
 import java.util.Objects;
 
@@ -27,7 +28,8 @@ public class Menu {
                 3. Search and Book a Flight
                 4. Cancel the Booking
                 5. My Flights
-                6. Exit
+                6. Notifications
+                7. Exit
                 ----------------------------------------
                 """;
     }
@@ -129,11 +131,14 @@ public class Menu {
                                     imp.myFlights();
                                     break;
                                 case 6:
+                                    imp.notifications();
+                                    break;
+                                case 7:
                                     System.out.print("Do you want to log out?\n1. Yes\n2. No\nEnter your choice: ");
                                     byte choice = ScannerInput.getByte();
                                     breaker = choice == 1;
                                     if (breaker) {
-                                        imp.setUser(null);
+                                        imp.setUser(new Accounts("user"));
                                     }
                                     break;
                                 default:

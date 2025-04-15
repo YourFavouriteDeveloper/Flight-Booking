@@ -4,6 +4,7 @@ import org.example.Input.ScannerInput;
 import org.example.User.Imp;
 import org.example.models.Accounts;
 import org.example.models.Flights;
+import org.example.models.Passengers;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -204,6 +205,55 @@ public class ImpAdmin implements ImplementationsAdmin {
     @Override
     public void myFlights() {
 
+    }
+
+
+    public static HashMap<Integer,Accounts> showAllUsers(Passengers passengers) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
+
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet tables = dbMeta.getTables(null, null, "flights", null);
+
+            if (tables.next()) {
+
+
+                String selectQuery = "SELECT * FROM passengers WHERE firstName = ? AND lastName = ? ";
+                String selectQueryUser = "SELECT * FROM users where passengerId = ?";
+                HashMap<Integer,Accounts> users = new HashMap<>();
+                try (PreparedStatement stmt = conn.prepareStatement(selectQuery);
+                PreparedStatement stmt2 = conn.prepareStatement(selectQueryUser)) {
+                    stmt.setString(1, passengers.getFirstName());
+                    stmt.setString(2, passengers.getLastName());
+                    ResultSet rs1 = stmt.executeQuery();
+
+
+                    while (rs1.next()) {
+                        passengers.setGender(rs1.getString("gender"));
+                        passengers.setId(rs1.getInt("id"));
+                        passengers.setNationality(rs1.getString("nationality"));
+                        passengers.setPassport(rs1.getString("passport"));
+                        Accounts accounts = new Accounts(passengers);
+                        stmt2.setInt(1, rs1.getInt("id"));
+                        ResultSet rs2 = stmt2.executeQuery();
+                        if(rs2.next()) {
+                            accounts.setPassword(rs2.getString("password"));
+                            accounts.setUsername(rs2.getString("username"));
+                            accounts.setAccountType("User");
+                        }
+                        users.put(rs1.getInt("id"), accounts);
+
+                    }
+
+                }
+                return users;
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

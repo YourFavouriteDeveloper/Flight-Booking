@@ -51,4 +51,12 @@ public class Accounts {
     public Accounts(String accountType) {
         this.accountType = AccountType.valueOf(accountType.substring(0, 1).toUpperCase() + accountType.substring(1).toLowerCase());
     }
+
+    public Accounts(Passengers passenger) {
+        this.passenger = passenger;
+    }
+
+
+
+
 }

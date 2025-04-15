@@ -1,5 +1,6 @@
 package org.example.User;
 
+import org.example.Admin.ImpAdmin;
 import org.example.Input.ScannerInput;
 import org.example.User.Implementations;
 import org.example.models.Accounts;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 
 public class Imp implements Implementations {
     private HashMap<Integer, Flights> flights = new HashMap<>();
+    private HashMap<Integer, Accounts> users = new HashMap<>();
     private Accounts user = new Accounts("user");
 
     public Accounts getUser() {
@@ -29,6 +31,14 @@ public class Imp implements Implementations {
         this.flights = flights;
     }
 
+    public HashMap<Integer, Accounts> getUsers() {
+        return users;
+    }
+
+    public void setUsers(HashMap<Integer, Accounts> users) {
+        this.users = users;
+    }
+
     @Override
     public boolean loginUser() {
         try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
@@ -36,7 +46,7 @@ public class Imp implements Implementations {
 
             DatabaseMetaData dbMeta = conn.getMetaData();
             ResultSet tables = dbMeta.getTables(null, null, "users", null);
-
+            HashMap<String, Accounts> usersCheck = new HashMap<>();
             if (tables.next()) {
 
 
@@ -62,6 +72,7 @@ public class Imp implements Implementations {
                             }
                         }
                         user.setPassenger(passenger);
+                        usersCheck.put(user.getUsername(), user);
 
                     }
 
@@ -70,13 +81,16 @@ public class Imp implements Implementations {
                 String username = ScannerInput.getString();
                 System.out.print("Enter password: ");
                 String password = ScannerInput.getString();
-                if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                    System.out.println("LOGIN SUCCESS");
-                    return true;
+                for (String userName : usersCheck.keySet()) {
+                    if (userName.equals(username) && usersCheck.get(userName).getPassword().equals(password)) {
+                        user = usersCheck.get(userName);
+                        System.out.println("LOGIN SUCCESS");
+                        return true;
+                    }
                 }
 
-            }
-            else {
+
+            } else {
                 System.out.print("NO USER FOUND\nWould you like to register a new user?\n1. yes\n2. no\nEnter your choice: ");
                 if (ScannerInput.getByte() == 1) {
                     registerUser();
@@ -118,7 +132,8 @@ public class Imp implements Implementations {
                         CREATE TABLE users (
                             username VARCHAR(255),
                             password VARCHAR(255),
-                            passengerId SERIAL PRIMARY KEY REFERENCES passengers(id)
+                            passengerId SERIAL PRIMARY KEY REFERENCES passengers(id),
+                            notifications VARCHAR(255)
                         );
                         """;
                 try (Statement stmt = conn.createStatement()) {
@@ -302,9 +317,21 @@ public class Imp implements Implementations {
 
                         switch (ScannerInput.getByte()) {
                             case 1:
-                                for(int i = 0;i<searchingPeople;i++) {
-                                    System.out.print("Enter the " + i+2 + " passenger's full name: ");
-                                    bookFlight(flight,new Passengers(ScannerInput.getNext(),ScannerInput.getNext()));
+                                for (int i = 1; i <= searchingPeople; i++) {
+                                    System.out.print("Enter the " + i + " passenger's full name: ");
+                                    HashMap<Integer, Accounts> accounts = ImpAdmin.showAllUsers(new Passengers(ScannerInput.getNext(), ScannerInput.getNext()));
+                                    for (Integer key : accounts.keySet()) {
+                                        System.out.println("ID " + key + ". " + accounts.get(key).getUsername());
+                                    }
+                                    System.out.println("Which user would you like to book?");
+                                    Integer choice = ScannerInput.getInt();
+                                    if (accounts.containsKey(choice)) {
+                                        bookFlight(flight, accounts.get(choice));
+                                    } else {
+                                        i--;
+                                        System.out.println("Invalid user. Please try again.");
+                                    }
+
                                 }
 
                             case 2:
@@ -329,6 +356,80 @@ public class Imp implements Implementations {
 
     @Override
     public boolean cancelBooking() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
+
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet tables = dbMeta.getTables(null, null, "bookings_passengers", null);
+
+            HashMap<Integer,Flights> flights = new HashMap<>();
+            String deleteQuery = "DELETE FROM bookings_passengers WHERE passengerId = ? AND bookingId = ?";
+            String insertNotification = "UPDATE users SET notifications = ? WHERE passengerId = ?";
+            String selectQueryBooking = "SELECT bookingId FROM bookings_passengers WHERE passengerId = ?";
+            String selectQueryPassenger = "SELECT passengerId FROM users WHERE username = ?";
+            String selectQueryFlight = "SELECT id, departureTime, destination FROM flights WHERE id = ?";
+            try (PreparedStatement pstmtDelete = conn.prepareStatement(deleteQuery);
+                 PreparedStatement pstmtNotification = conn.prepareStatement(insertNotification);
+                 PreparedStatement pstmtPassenger = conn.prepareStatement(selectQueryPassenger);
+                 PreparedStatement pstmtBooking = conn.prepareStatement(selectQueryBooking);
+                 PreparedStatement pstmtFlight = conn.prepareStatement(selectQueryFlight)) {
+                pstmtPassenger.setString(1, user.getUsername());
+                ResultSet rsPassenger = pstmtPassenger.executeQuery();
+                int counter = 0;
+                if (rsPassenger.next()) {
+                    pstmtBooking.setInt(1, rsPassenger.getInt("passengerId"));
+                    pstmtDelete.setInt(1, rsPassenger.getInt("passengerId"));
+                    pstmtNotification.setInt(2, rsPassenger.getInt("passengerId"));
+                    ResultSet rsBooking = pstmtBooking.executeQuery();
+
+
+                    while (rsBooking.next()) {
+                        counter++;
+                        pstmtFlight.setInt(1, rsBooking.getInt("bookingId"));
+                        ResultSet rsFlight = pstmtFlight.executeQuery();
+                        if(rsFlight.next()) {
+                            Flights flight = new Flights();
+                            flight.setFlightId(rsFlight.getInt("id"));
+                            flight.setDepartureTime(rsFlight.getDate("departureTime"));
+                            flight.setDestination(rsFlight.getString("destination"));
+                            flights.put(flight.getFlightId(), flight);
+                            System.out.println("\n----------------------------------------");
+                            System.out.println("Flight ID: " + rsFlight.getInt("id"));
+                            System.out.println("Departure Time: " + rsFlight.getDate("departureTime"));
+                            System.out.println("Destination: " + rsFlight.getString("destination"));
+                            System.out.print("----------------------------------------");
+                        }
+
+                    }
+                    pstmtNotification.setInt(2, rsPassenger.getInt("passengerId"));
+
+
+                }
+                if(counter == 0) {
+                    System.out.println("There is no flight booked.");
+                    return false;
+                }
+                System.out.print("\nEnter the flight ID  you want to cancel booking: ");
+                Integer choice = ScannerInput.getInt();
+                if (flights.containsKey(choice)) {
+                    pstmtDelete.setInt(2, flights.get(choice).getFlightId());
+                    if(pstmtDelete.executeUpdate()>0) {
+                        pstmtNotification.setString(1,"Your booking for Flight " + flights.get(choice).getFlightNumber() + " has been cancelled.");
+                        pstmtNotification.executeUpdate();
+                        seatChange(flights.get(choice), 1);
+                        System.out.println("Booking has been cancelled.");
+                        return true;
+                    }
+                }
+
+
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Booking failed to be cancelled.");
         return false;
     }
 
@@ -338,7 +439,7 @@ public class Imp implements Implementations {
     }
 
     @Override
-    public boolean bookFlight(Flights flight,Passengers passenger) {
+    public boolean bookFlight(Flights flight, Accounts account) {
         try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
 
@@ -359,19 +460,24 @@ public class Imp implements Implementations {
             }
 
             String insertQuery = "INSERT INTO bookings_passengers (passengerId,seatNumber,bookingId) VALUES (?,?,?)";
+            String insertNotification = "UPDATE users SET notifications = ? WHERE passengerId = ?";
             String selectQueryBooking = "SELECT flightId FROM bookings WHERE flightId = ?";
             String selectQueryPassenger = "SELECT passengerId FROM users WHERE username = ?";
-            try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
+            try (PreparedStatement pstmt = conn.prepareStatement(insertQuery);
+                 PreparedStatement pstmt2 = conn.prepareStatement(insertNotification)) {
                 try (PreparedStatement stmt = conn.prepareStatement(selectQueryPassenger)) {
-                    stmt.setString(1,user.getUsername());
+                    stmt.setString(1, account.getUsername());
                     ResultSet rs2 = stmt.executeQuery();
                     if (rs2.next()) {
                         pstmt.setInt(1, rs2.getInt("passengerId"));
+                        pstmt2.setInt(2, rs2.getInt("passengerId"));
+                        pstmt2.setString(1, "You have been booked! You will be expected to be in " + flight.getFlightNumber() + " Flight!");
+                        pstmt2.executeUpdate();
                     }
                     System.out.print("Enter the seat number: ");
                     pstmt.setInt(2, ScannerInput.getInt());
                     try (PreparedStatement tmt = conn.prepareStatement(selectQueryBooking)) {
-                        tmt.setInt(1,flight.getFlightId());
+                        tmt.setInt(1, flight.getFlightId());
                         ResultSet rs1 = tmt.executeQuery();
                         if (rs1.next()) {
                             pstmt.setInt(3, rs1.getInt("flightId"));
@@ -382,7 +488,7 @@ public class Imp implements Implementations {
                 }
 
                 pstmt.executeUpdate();
-                return reduceSeats(flight);
+                return seatChange(flight, -1);
 
             }
 
@@ -395,11 +501,12 @@ public class Imp implements Implementations {
     }
 
     @Override
-    public boolean reduceSeats(Flights flight) {
-        try(Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
-            String updateQuery = "UPDATE flights SET availableSeats = availableSeats - 1 WHERE id = ? AND availableSeats -1 >= 0";
+    public boolean seatChange(Flights flight, int value) {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
+            String updateQuery = "UPDATE flights SET availableSeats = ? WHERE id = ? AND availableSeats -1 >= 0";
             try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-                pstmt.setInt(1, flight.getFlightId());
+                pstmt.setInt(1, flight.getAvailableSeats() + value);
+                pstmt.setInt(2, flight.getFlightId());
                 int result = pstmt.executeUpdate();
                 return (result > 0);
             }
@@ -409,8 +516,41 @@ public class Imp implements Implementations {
 
     }
 
+
     @Override
     public void notifications() {
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "0000")) {
 
+
+            DatabaseMetaData dbMeta = conn.getMetaData();
+            ResultSet tables = dbMeta.getTables(null, null, "users", null);
+
+            if (tables.next()) {
+
+
+                String selectQuery = "SELECT notifications FROM users WHERE passengerId = ?";
+                try (PreparedStatement preparedStatement = conn.prepareStatement(selectQuery)) {
+                    preparedStatement.setInt(1, user.getPassenger().getId());
+                    ResultSet rs = preparedStatement.executeQuery();
+                    boolean found = false;
+
+                    while (rs.next()) {
+                        System.out.println("\n----------------------------------------");
+                        System.out.println(rs.getString("notifications"));
+                        found = true;
+                    }
+
+                    if (!found) {
+                        System.out.println("No notifications found.");
+                    }
+
+
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
