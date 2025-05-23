@@ -3,19 +3,20 @@ package org.example.models;
 import org.example.enums.Gender;
 
 public class Passengers {
-    private int id;
+    private int passengerId;
     private String firstName;
     private String lastName;
     private Gender gender;
     private String nationality;
     private String passport;
+    private boolean isBooked;
 
     public int getId() {
-        return id;
+        return passengerId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(int passengerId) {
+        this.passengerId = passengerId;
     }
 
     public String getFirstName() {
@@ -38,8 +39,8 @@ public class Passengers {
         return gender;
     }
 
-    public void setGender(Gender gender) {
-        this.gender = gender;
+    public void setGender(String gender) {
+        this.gender = Gender.valueOf(gender.substring(0, 1).toUpperCase() + gender.substring(1).toLowerCase());
     }
 
     public String getNationality() {
@@ -58,13 +59,38 @@ public class Passengers {
         this.passport = passport;
     }
 
+    public boolean isBooked() {
+        return isBooked;
+    }
 
-    public Passengers(int id, String firstName, String lastName, Gender gender, String nationality, String passport) {
-        this.id = id;
+    public void setBooked(boolean booked) {
+        isBooked = booked;
+    }
+
+    public Passengers() {}
+
+    public Passengers(int passengerId, String firstName, String lastName, String gender, String nationality, String passport) {
+        this.passengerId = passengerId;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.gender = gender;
+        this.gender = Gender.valueOf(gender.substring(0, 1).toUpperCase() + gender.substring(1).toLowerCase());
         this.nationality = nationality;
         this.passport = passport;
+    }
+
+    public Passengers(String firstName,String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    @Override
+    public String toString() {
+        return "\n----------------------------------------\n" +
+                "Passenger ID: " + passengerId +
+                "\nFull Name: " + firstName + ' ' + lastName +
+                "\nGender: " + gender +
+                "\nNationality: " + nationality +
+                "\nPassport: " + passport +
+                "\n----------------------------------------";
     }
 }
